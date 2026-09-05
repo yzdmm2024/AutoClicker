@@ -305,20 +305,20 @@ static int dispatchViaHID(CGFloat x, CGFloat y, BOOL touchDown) {
     return 1;
 }
 
-// 找一个"真正的宿主窗口"投递合成触摸(排除我们自己的浮层)
+// 找一个"真正的宿主窗口"投递合成触摸(排除我们自己的浮层: 浮层 windowLevel 高于 Normal)
 static UIWindow *acFindHostWindow(void) {
     UIApplication *app = [UIApplication sharedApplication];
     UIWindow *kw = nil;
     if ([app respondsToSelector:@selector(keyWindow)]) kw = [app keyWindow];
-    if (kw && ![kw isKindOfClass:[ACPassThroughWindow class]] && !kw.hidden) return kw;
+    if (kw && !kw.hidden && kw.windowLevel <= UIWindowLevelNormal) return kw;
     for (UIWindow *w in [app windows]) {
         if (w.hidden) continue;
-        if ([w isKindOfClass:[ACPassThroughWindow class]]) continue;
+        if (w.windowLevel > UIWindowLevelNormal) continue; // 跳过浮层/弹窗
         if (w.rootViewController) return w;
     }
     for (UIWindow *w in [app windows]) {
         if (w.hidden) continue;
-        if ([w isKindOfClass:[ACPassThroughWindow class]]) continue;
+        if (w.windowLevel > UIWindowLevelNormal) continue;
         return w;
     }
     return kw;
