@@ -13,7 +13,8 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install ldid
-        run: brew install ldid
+        continue-on-error: true
+        run: brew install ldid || HOMEBREW_NO_REQUIRE_TAP_TRUST=1 brew install ldid || true
 
       - name: Show toolchain
         run: |
