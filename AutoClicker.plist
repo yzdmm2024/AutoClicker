@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Filter</key>
+    <dict>
+        <key>Bundles</key>
+        <array>
+            <!-- 要注入的目标 App bundle id。改成你实际要连点的 App，例如游戏/微信 -->
+            <string>com.weizhi.Newxiandai123456</string>
+        </array>
+        <!-- 若想注入所有 App（含 SpringBoard），改用下面这行 Executables：
+        <key>Executables</key>
+        <array>
+            <string>*</string>
+        </array>
+        -->
+    </dict>
+</dict>
+</plist>

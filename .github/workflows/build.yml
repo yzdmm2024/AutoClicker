@@ -1,0 +1,54 @@
+name: Build AutoClicker dylib
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, master]
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install ldid
+        run: brew install ldid
+
+      - name: Show toolchain
+        run: |
+          xcrun --sdk iphoneos clang --version
+          xcodebuild -sdk iphoneos -version 2>/dev/null | head -3 || true
+
+      - name: Compile & link dylib
+        run: |
+          set -e
+          xcrun -sdk iphoneos clang \
+            -arch arm64 \
+            -fobjc-arc \
+            -miphoneos-version-min=14.0 \
+            -I. \
+            -dynamiclib \
+            -Wl,-undefined,dynamic_lookup \
+            -Wno-arc-performSelector-leaks \
+            -Wno-incompatible-pointer-types \
+            -Wno-deprecated-declarations \
+            -framework UIKit -framework Foundation -framework IOKit \
+            Tweak.m -o AutoClicker.dylib
+          echo "=== built ==="
+          ls -la AutoClicker.dylib
+          file AutoClicker.dylib
+
+      - name: Sign with ldid
+        run: |
+          ldid -S entitlements.xml AutoClicker.dylib
+          echo "=== entitlements ==="
+          ldid -l AutoClicker.dylib || true
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: AutoClicker.dylib
+          path: |
+            AutoClicker.dylib
+            AutoClicker.plist
