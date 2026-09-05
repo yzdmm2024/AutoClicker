@@ -293,7 +293,7 @@ static int dispatchViaHID(CGFloat x, CGFloat y, BOOL touchDown) {
     if (!hid) return 0;
     Class evtClass = NSClassFromString(@"UITouchesEvent");
     if (!evtClass) { CFRelease(hid); return 0; }
-    UIEvent *event = [[evtClass alloc] init];
+    id event = [[evtClass alloc] init];
     @try { if ([event respondsToSelector:@selector(_setHIDEvent:)]) [event _setHIDEvent:(__bridge id)hid]; }
     @catch (NSException *e) { NSLog(@"[AC] _setHIDEvent 失败: %@", e.reason); }
     [[UIApplication sharedApplication] sendEvent:event];
@@ -334,12 +334,12 @@ static int dispatchViaUITouchesEvent(UIWindow *win, CGFloat x, CGFloat y, BOOL t
 
     @try {
         id touch = [[touchClass alloc] init];
-        [touch setWindow:win];
-        [touch setView:hostView];
+        [touch setValue:win forKey:@"window"];
+        [touch setValue:hostView forKey:@"view"];
         [touch setValue:[NSValue valueWithCGPoint:ptWin] forKey:@"_locationInWindow"];
         [touch setValue:[NSValue valueWithCGPoint:ptWin] forKey:@"_previousLocationInWindow"];
-        [touch setPhase:touchDown ? UITouchPhaseBegan : UITouchPhaseEnded];
-        [touch setTapCount:1];
+        [touch setValue:@(touchDown ? UITouchPhaseBegan : UITouchPhaseEnded) forKey:@"_phase"];
+        [touch setValue:@(1) forKey:@"_tapCount"];
         [touch setValue:@(ts) forKey:@"_timestamp"];
         [touch setValue:@(1) forKey:@"_touchIdentifier"];
 
