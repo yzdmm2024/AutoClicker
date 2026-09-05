@@ -40,12 +40,24 @@ jobs:
           file AutoClicker.dylib
 
       - name: Sign with ldid
+        continue-on-error: true
         run: |
-          # clang 默认会给产物加 ad-hoc 签名, 新版 ldid 重签时会断言失败, 先剥离
-          codesign --remove-signature AutoClicker.dylib || true
-          ldid -S entitlements.xml AutoClicker.dylib
-          echo "=== entitlements ==="
-          ldid -l AutoClicker.dylib || true
+          # 先彻底剥离已有签名(ldid 自带的 -r 比 codesign 更干净, 避免新版 ldid 重签时断言崩溃)
+          ldid -r AutoClicker.dylib 2>/dev/null || true
+          codesign --remove-signature AutoClicker.dylib 2>/dev/null || true
+          # 策略1: -S 紧贴文件名
+          if ldid -Sentitlements.xml AutoClicker.dylib 2>&1; then
+            echo "=== SIGNED via -Sentitlements.xml ==="
+            ldid -l AutoClicker.dylib || true
+            exit 0
+          fi
+          # 策略2: 仅加 iOS 平台签名(不要 entitlements)
+          echo "---- 重试: 仅平台签名 -S ----"
+          if ldid -S AutoClicker.dylib 2>&1; then
+            echo "=== SIGNED via -S (no entitlements) ==="
+            exit 0
+          fi
+          echo "WARN: ldid 签名失败, 产物保持未签名(交由 TrollFools 注入时重签)"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
