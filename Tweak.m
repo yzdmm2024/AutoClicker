@@ -294,7 +294,7 @@ static int dispatchViaHID(CGFloat x, CGFloat y, BOOL touchDown) {
     Class evtClass = NSClassFromString(@"UITouchesEvent");
     if (!evtClass) { CFRelease(hid); return 0; }
     id event = [[evtClass alloc] init];
-    @try { if ([event respondsToSelector:@selector(_setHIDEvent:)]) [event _setHIDEvent:(__bridge id)hid]; }
+    @try { if ([event respondsToSelector:@selector(_setHIDEvent:)]) [event performSelector:@selector(_setHIDEvent:) withObject:(__bridge id)hid]; }
     @catch (NSException *e) { NSLog(@"[AC] _setHIDEvent 失败: %@", e.reason); }
     [[UIApplication sharedApplication] sendEvent:event];
     CFRelease(hid);
